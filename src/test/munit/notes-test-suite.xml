@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="notes-test-suite.xml" />
+	<munit:test name="notes-test-suite-get:\notes:notes-configTest" doc:id="b4cbe8d4-d0fb-4e41-843a-0e2d490ad38d" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="b7c81a9a-811d-4ca0-80d3-d451f699e62f" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Select" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="8c02a832-c4c5-44c5-8c05-f58711567d5d" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="Database_Config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('Database/get.json')]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to get:\notes:notes-config" doc:id="983dfbfc-2c4a-4236-a871-032c0b04ae4b" name="get:\notes:project-b-2-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="509b1cfb-2e6d-4d02-9af8-e9a91861faed" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="notes-test-suite-get:\notes\(noteId):notes-configTest" doc:id="522f089f-2e71-4759-ad48-023c4a1ae5fe" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="4b4eda1e-e28a-4f53-b43a-97a83379a58d" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Select" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="c18d4a87-1dae-43e6-9740-fda34eb84ed9" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="Database_Config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('Database/getS.json')]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to get:\notes\(noteId):notes-config" doc:id="6b79e426-1654-46f5-bce2-ca2da7c162e0" name="get:\notes\(noteId):project-b-2-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="318399aa-2aea-4bed-b176-8058951377d3" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="notes-test-suite-delete:\notes\(noteId):notes-configTest" doc:id="10affd1c-b36b-4605-91c0-4041d75b6e04" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="ef7a75ca-c903-4580-bc6c-d0a3c3b6c787" processor="db:delete">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Delete" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="056dda4c-8d2f-4299-a198-d4ef73a8eb6e" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="Database_Config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#[{&#10;  Message: "Note deleted Successfully"&#10;}]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="90404712-4ad4-45fe-8b54-d0d002f1969e" >
+				<munit:attributes value="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	uriParams: {&#10;		noteId: 111&#10;	}&#10;}]" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to delete:\notes\(noteId):notes-config" doc:id="84e0afa8-c0a6-45a0-b200-783a1cb0267e" name="delete:\notes\(noteId):project-b-2-config"/>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="e027a786-622b-485b-8235-68f83c053ce4" actual="#[payload]" expected='#[{&#10;  Message: "Note deleted Successfully"&#10;}]'/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="POST-Munit-Test" doc:id="be467271-0492-4b4a-acaf-e804ae54b568" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="5f3b442b-7b0f-44aa-a687-1216d750c64c" processor="db:insert">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Insert" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="268a6bf3-7c7d-4748-b988-e19909ea1987" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="Database_Config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('Database/file.json')]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<set-payload value="#[MunitTools::getResourceAsString('Database/post.json')]" doc:name="Set Payload" doc:id="17aca680-9033-4d45-8c38-b2e6c9101ea8" />
+			<flow-ref doc:name="Flow-ref to post:\notes:application\json:notes-config" doc:id="51357492-5e09-4248-baeb-8e401ca18ef4" name="post:\notes:application\json:project-b-2-config"/>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="58e5781b-7eb7-4804-b079-4f417779f045" actual="#[payload]" expected='#[{&#10;    "Message": "Welcome to group B you have successfully created a file "&#10;}]'/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="Update-1st-Test" doc:id="d81114ad-f1fb-4fdd-a9d2-d0b39fe97f74" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="ddece323-cb82-467e-9929-120b72f75cb3" processor="db:update">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Update" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="36593f63-d5cc-4fe6-97eb-2b5c5aa3881c" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="Database_Config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('Database/putres.json')]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="ba6cea67-bd84-4d68-a971-5700630f7752" >
+				<munit:payload value="#[readUrl('classpath://Database/putre.json')]" />
+				<munit:attributes value="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	uriParams: {&#10;		noteId: 107&#10;	}&#10;}]" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to put:\notes\(noteId):application\json:notes-config" doc:id="19957f16-1023-456c-bb48-e5ba617d527c" name="put:\notes\(noteId):application\json:project-b-2-config"/>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:assert doc:name="Assert expression" doc:id="41ab827a-4f11-489e-b630-1eb62d2c524f" >
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+
+import Database::Assertionexp
+---
+Assertionexp::main(payload: payload)]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

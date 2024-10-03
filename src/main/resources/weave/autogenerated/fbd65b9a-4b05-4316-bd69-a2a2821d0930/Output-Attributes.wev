@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_fbd65b9a_4b05_4316_bd69_a2a2821d0930_Output_Attributes = {| uriParams: {| noteId: Number |} |}
+
