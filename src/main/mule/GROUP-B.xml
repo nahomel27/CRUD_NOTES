@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:ftp="http://www.mulesoft.org/schema/mule/ftp" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ftp http://www.mulesoft.org/schema/mule/ftp/current/mule-ftp.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+    <http:listener-config name="project-b-2-httpListenerConfig">
+        <http:listener-connection host="${secure::http.host}" port="${secure::http.port}" />
+    </http:listener-config>
+    <apikit:config name="project-b-2-config" api="resource::fdb9ac9a-14eb-4563-8ba5-021035014236:project-b-2:1.0.0:raml:zip:project-b-2.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <db:config name="Database_Config" doc:name="Database Config" doc:id="1dba9804-a3a3-40a9-8a1d-7b6084669a43" >
+		<db:my-sql-connection host="${secure::database.host}" port="${secure::database.port}" user="${secure::database.user}" password="${secure::database.password}" database="groupb" />
+	</db:config>
+	<ftp:config name="FTP_Config" doc:name="FTP Config" doc:id="c700d65d-366e-45dc-ad6e-62327e328970" >
+		<ftp:connection workingDir="Group_B" host="ftp.drivehq.com" username="nahomel94" password="Ekuygreat11" />
+	</ftp:config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="a85c19ed-9012-4084-93ee-963ea7477b78" >
+		<file:connection workingDir="C:\Users\nahem\OneDrive\Pictures\Camera Roll" />
+	</file:config>
+	<configuration-properties doc:name="Configuration properties" doc:id="16fb0906-37c4-46e6-b428-62c52b7466c0" file="dev.yaml" />
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="d0860647-9802-4a8b-aef0-e10a1fc9698a" file="dev.yaml" key="groupB" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+	<file:config name="File_Config1" doc:name="File Config" doc:id="57c6601c-fd2d-4d92-b9bd-bb8dfbcd338a" >
+		<file:connection workingDir="C:\Users\nahem\OneDrive\Desktop\Registerd_User" />
+	</file:config>
+	<flow name="project-b-2-main">
+        <http:listener config-ref="project-b-2-httpListenerConfig" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="project-b-2-config" />
+		<error-handler ref="global_error_handling" />
+      
+    </flow>
+    <flow name="put:\notes\(noteId):application\json:project-b-2-config" doc:id="fbd65b9a-4b05-4316-bd69-a2a2821d0930">
+        <ee:transform doc:name="Transform Message" doc:id="330b7671-9832-4a37-9ea4-e6df766a00d4" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="var2" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	id: attributes.uriParams.noteId,
+	title: payload.title,
+	content: payload.content
+	
+	
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<db:select doc:name="Select" doc:id="fdf4955a-c07d-46b4-9629-3fb19a685dae" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from notes where id=:id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[id: attributes.uriParams.noteId]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="e111c24e-1ec8-4565-8226-12dffe888582" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="3bcbac2d-a51f-4b9b-a88a-9cc6396dbd96" >
+			<when expression="#[!isEmpty(payload)]">
+				<db:update doc:name="Update" doc:id="36593f63-d5cc-4fe6-97eb-2b5c5aa3881c" config-ref="Database_Config">
+					<db:sql ><![CDATA[update notes set title=:title, content=:content where id=:noteId]]></db:sql>
+					<db:input-parameters ><![CDATA[#[{
+	noteId: vars.var2.id,
+	title: vars.var2.title,
+	content: vars.var2.content
+}]]]></db:input-parameters>
+				</db:update>
+				<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  Message: "Note Updated Successfully"
+} ]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+			</when>
+			<otherwise >
+				<db:insert doc:name="Insert" doc:id="9a7064d8-42c3-4e9c-8964-08b8a9d89d27" config-ref="Database_Config">
+					<db:sql ><![CDATA[insert into notes (title,content) values(:title,:content)]]></db:sql>
+					<db:input-parameters ><![CDATA[#[{
+	
+	title: vars.var2.title,
+	content: vars.var2.content
+}]]]></db:input-parameters>
+				</db:insert>
+				<ee:transform doc:name="Transform Message" doc:id="ea98ff82-e8df-4f57-bcc4-cff643ec3b86" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"MSG": "note created succssfully"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+    </flow>
+    <flow name="delete:\notes\(noteId):project-b-2-config" doc:id="af3e1ff9-c261-4b8f-b1bf-718e4e375d82">
+        <set-variable value="#[attributes.uriParams.noteId]" doc:name="Set Variable" doc:id="a5169dda-cde6-4aa2-8974-9234442e3c0a" variableName="var1"/>
+		<db:select doc:name="Select" doc:id="b3bd66ba-a3a1-4a17-a739-279879c20f3b" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from Notes where id=:id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[id: vars.var1]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="7986122f-8a36-4df3-9922-a7ffcf06ae3f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="520dde0f-5b19-4fb0-939f-05ae28933ce6" >
+			<when expression="#[!isEmpty(payload)]">
+				<file:write doc:name="Write" doc:id="4986a9fd-fd13-40e5-8656-bb4422faf266" config-ref="File_Config1" path='#["original" ++ vars.var1 ++ ".json"]' mode="CREATE_NEW"/>
+				<db:delete doc:name="Delete" doc:id="056dda4c-8d2f-4299-a198-d4ef73a8eb6e" config-ref="Database_Config">
+					<db:sql><![CDATA[delete from notes where id=:id]]></db:sql>
+					<db:input-parameters><![CDATA[#[id: vars.var1]]]></db:input-parameters>
+				</db:delete>
+				<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  Message: "Note deleted Successfully"
+} ]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+			</when>
+			<otherwise>
+				<raise-error doc:name="Raise error" doc:id="5ae84bb1-e3ac-443d-ad6b-75d1e9e203d5" type="ANY" description="NO DATA FOUND WITH THIS ID"/>
+			</otherwise>
+		</choice>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="377435f6-9a3a-456e-b939-b3d105c18bce" >
+				<ee:transform doc:name="Transform Message" doc:id="820dc5f9-dc54-469b-a30a-5b0a7847d1b6" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Msg": "DATA NOT FOUND TO DELETE"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="404" doc:name="Set Variable" doc:id="61f6ca97-e46e-4785-a6cb-c67645885a9b" variableName="httpStatus"/>
+			</on-error-propagate>
+		</error-handler>
+    </flow>
+    <flow name="get:\notes:project-b-2-config" doc:id="3c853aab-f36b-4e6f-8352-281d949d794a">
+        <db:select doc:name="Select" doc:id="f8b3bdb7-25a3-4e0d-a6ee-babef6ab9e80" config-ref="Database_Config">
+			<db:sql ><![CDATA[SELECT * FROM notes;
+]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		
+		
+    </flow>
+    <flow name="get:\notes\(noteId):project-b-2-config" doc:id="fa6ba529-e673-4675-a92c-9bf64946be99">
+        <db:select doc:name="Select" doc:id="a799cc47-428c-49bc-8b9e-7d39237a81bc" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from notes where id=:noteId]]></db:sql>
+			<db:input-parameters ><![CDATA[#[noteId: attributes.uriParams.noteId]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="post:\notes:application\json:project-b-2-config" doc:id="96525a33-3a34-4f63-ad4c-c7cffa23cfa5">
+		<ee:transform doc:name="Transform Message" doc:id="6373be28-78ee-4f6e-84fb-192d42961ac3">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<db:insert doc:name="Insert" doc:id="268a6bf3-7c7d-4748-b988-e19909ea1987" config-ref="Database_Config">
+			<db:sql ><![CDATA[insert into Notes (title,content) values(:title,:content)]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	title: payload.title,
+	content: payload.content
+}]]]></db:input-parameters>
+		</db:insert>
+		<file:read doc:name="Read" doc:id="104a86ad-b346-4c2a-9811-5b38f89ccce3" config-ref="File_Config" path='C:\Users\nahem\OneDrive\Pictures\Camera Roll\file.json'/>
+		<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+</mule>
